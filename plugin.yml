@@ -1,0 +1,6 @@
+name: HerobrineJumpscare
+version: 1.0.0
+main: com.liekg1.herobrine.HerobrineJumpscare
+api-version: '1.21'
+author: lie-kg1
+description: A terrifying Herobrine NPC jumpscare plugin for Paper 1.21.11.
