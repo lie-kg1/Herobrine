@@ -26,7 +26,6 @@ public final class HerobrineJumpscare extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        // Register events to listen for the player interaction trigger
         getServer().getPluginManager().registerEvents(this, this);
         getLogger().info("Herobrine Jumpscare Plugin successfully enabled!");
     }
@@ -38,56 +37,50 @@ public final class HerobrineJumpscare extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerTrigger(PlayerInteractEvent event) {
-        // Trigger condition: Operator player right-clicks to test the jumpscare
-        if (event.getAction().name().contains("RIGHT_CLICK") && event.getPlayer().isOp()) {
+        // You can change this condition to trigger whenever you want!
+        if (event.getAction().name().contains("RIGHT_CLICK")) {
             Player player = event.getPlayer();
             
-            // Calculate spawn location 3 blocks directly in front of where the player is looking
+            // Calculate a location 3 blocks directly in front of the player's eyes
             Location spawnLoc = player.getLocation().add(player.getLocation().getDirection().multiply(3));
-            // Adjust height so the NPC stands level with the player's view line
-            spawnLoc.setY(player.getLocation().getY()); 
+            spawnLoc.setY(player.getLocation().getY()); // Keep it on ground level
 
-            // 1. Spawn the Herobrine NPC Base (Invisible ArmorStand)
+            // Spawn the Herobrine ArmorStand entity
             ArmorStand herobrine = (ArmorStand) player.getWorld().spawnEntity(spawnLoc, EntityType.ARMOR_STAND);
             herobrine.setVisible(false);
-            herobrine.setGravity(false);
-            herobrine.setArms(true);
             herobrine.setBasePlate(false);
+            herobrine.setArms(true);
             herobrine.setCustomName("Herobrine");
             herobrine.setCustomNameVisible(false);
 
-            // 2. Generate and Apply the Herobrine Skin via Base64 File Textures
+            // Create Herobrine custom head item
             ItemStack herobrineHead = new ItemStack(Material.PLAYER_HEAD);
             SkullMeta headMeta = (SkullMeta) herobrineHead.getItemMeta();
-
+            
             if (headMeta != null) {
-                // Anonymous profile generation using a static random UUID signature
                 PlayerProfile skinProfile = Bukkit.createPlayerProfile(UUID.randomUUID(), "Herobrine");
-                
-                // Base64 string pointing directly to Mojang's official Herobrine asset server link
-                String base64Texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzk5YWQ3YTA0MzE2OTI5OTRiNmM0MTJjN2VhZmI5ZTBmYzQ5OTc1MjQwYjczYTI3ZDI0ZWQ3OTcwMzVmYjg5NCJ9fX0=";
-                
+                // Base64 value for standard Herobrine skin textures
+                String base64Texture = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTU4YmU5NTg3ZThjMWY3OTNhN2I4MWI2YjVlYTYzNzg2NDg3OWZjN2IyNWYwNThmMDkyNTU0YTYzNjU0OGU1In19fQ==";
                 skinProfile.setProperty(new ProfileProperty("textures", base64Texture));
                 headMeta.setOwnerProfile(skinProfile);
                 herobrineHead.setItemMeta(headMeta);
             }
-
-            // Equip the custom skin skull onto the NPC armorstand structure
+            
+            // Equip the item on the armor stand
             if (herobrine.getEquipment() != null) {
                 herobrine.getEquipment().setHelmet(herobrineHead);
             }
 
-            // 3. Execute the Jumpscare Sensory Effects
-            // Play low-pitched enderman scream directly at the player
+            // Audio/Visual Scare Effects
             player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_SCREAM, 1.0f, 0.5f);
             
-            // Give a sudden 2-second blindness/darkness visual overlay effect
+            // Give temporary darkness blindness
             player.addPotionEffect(new PotionEffect(PotionEffectType.DARKNESS, 40, 1, false, false));
             
-            // Explode a giant elder guardian particle directly in front of their eyes
+            // Trigger Elder Guardian jumpscare flash image
             player.spawnParticle(Particle.ELDER_GUARDIAN, player.getLocation().add(player.getLocation().getDirection().multiply(1.5)), 1);
 
-            // 4. Clean up: Force Herobrine to vanish instantly after 10 ticks (0.5 seconds)
+            // Remove the Herobrine entity automatically after 1.5 seconds (30 ticks)
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -95,7 +88,7 @@ public final class HerobrineJumpscare extends JavaPlugin implements Listener {
                         herobrine.remove();
                     }
                 }
-            }.runTaskLater(this, 10L);
+            }.runTaskLater(this, 30L);
         }
     }
 }
